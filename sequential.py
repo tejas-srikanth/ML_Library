@@ -82,4 +82,4 @@ class MSELoss():
         return np.mean(np.square(y - ypred), axis=0)
     
     def backward(self):
-        return 2 * (self.y - self.ypred)
+        return - 2 * (self.y - self.ypred)
