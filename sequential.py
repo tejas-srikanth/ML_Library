@@ -2,7 +2,7 @@ import numpy as np
 from math import sqrt
 
 class Module:
-    def sgd_step(): pass
+    def sgd_step(self, lrate): pass
     
 
 class Sequential():
@@ -35,9 +35,15 @@ class Linear(Module):
         self.sgd_defined = True
     
     def forward(self, A): # A is (m x b)
+        print(f'FORWARD {self.m}, {self.n}: {self.W.shape}, {self.W0.shape}')
         self.A = A
         # (n x m) . (m x b) + (n x 1) = (n x b)
-        return np.dot(self.W, self.A) + self.W0 # return value is (n x b)
+        try:
+            return np.dot(self.W, self.A) + self.W0 # return value is (n x b)
+        except ValueError:
+            print(f'{self.W.shape}, {self.W0.shape}, {self.A.shape}')
+            raise ValueError("NOT GOOD")
+
     
     def __repr__(self):
         return f'W: {self.W}, W0: {self.W0}, A: {self.A}'
