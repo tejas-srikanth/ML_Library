@@ -2,7 +2,7 @@ import numpy as np
 from math import sqrt
 
 class Module:
-    def sgd_step(): pass
+    def sgd_step(self, lr): pass
     
 
 class Sequential():
@@ -26,25 +26,32 @@ class Sequential():
         
 
 class Linear(Module):
-    def __init__(self, in_layers, out_layers):
+    def __init__(self, in_layers, out_layers, zero_init=False):
         self.m = in_layers
         self.n = out_layers
         stdv = 1.0 / sqrt(self.m)
-        self.W = np.random.uniform(-stdv, stdv, (self.n, self.m)) # W: (n x m)
-        self.W0 = np.random.uniform(-stdv, stdv, (self.n, 1)) # W0: (n x 1)
+        if not zero_init:
+            self.W = np.random.uniform(-stdv, stdv, (self.n, self.m)) # W: (n x m)
+            self.W0 = np.random.uniform(-stdv, stdv, (self.n, 1)) # W0: (n x 1)
+        else:
+            self.W = np.zeros((self.n, self.m)) # W: (n x m)
+            self.W0 = np.ones((self.n, 1)) # W0: (n x 1)
+
         self.sgd_defined = True
     
     def forward(self, A): # A is (m x b)
         self.A = A
         # (n x m) . (m x b) + (n x 1) = (n x b)
         return np.dot(self.W, self.A) + self.W0 # return value is (n x b)
+        return np.dot(self.W, self.A) + self.W0 # return value is (n x b)
+
     
     def __repr__(self):
         return f'W: {self.W}, W0: {self.W0}, A: {self.A}'
     
     def backward(self, dLdZ): # dLdZ: (n x b)
         self.dLdW = np.dot(dLdZ, self.A.T)  # dLdW: (n x m)
-        self.dLdW0 = np.sum(dLdZ, axis=1) # dLdW0: (n x 1)
+        self.dLdW0 = np.sum(dLdZ, axis=1).reshape(-1,1) # dLdW0: (n x 1)
         return np.dot(self.W.T, dLdZ) # dLd(A_prev): (m x b)
     
     def sgd_step(self, lr):
@@ -77,9 +84,19 @@ class Tanh(Module):
 class MSELoss():
 
     def forward(self, y, ypred):
-        self.y = y
+        self.y = y.reshape(1,-1)
         self.ypred = ypred
-        return np.mean(np.square(y - ypred), axis=0)
+        return np.mean(np.square(y - ypred), axis=1)
     
     def backward(self):
         return - 2 * (self.y - self.ypred)
+
+class LinearRegression():
+
+    def fit(self, X, y):
+        inv_AtA = np.linalg.inv(np.dot(X.T, X))
+        self.x_hat = np.dot(np.dot(inv_AtA, X.T), y)
+        return self.x_hat
+    
+    def predict(self, X):
+        return np.dot(X, self.x_hat)
