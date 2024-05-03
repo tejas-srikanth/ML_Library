@@ -91,11 +91,30 @@ class MSELoss():
     def backward(self):
         return - 2 * (self.y - self.ypred)
 
+
 class LinearRegression():
 
+    def gram_schmidt(self, X):
+        num_cols = X.shape[1]
+        X[:, 0] = (1 / np.linalg.norm(X[:, 0])) * X[:, 0] 
+        for i in range(1, num_cols):
+            proj = np.zeros_like(X[:, 0])
+            for j in range(i):
+                X_ij = np.dot(X[:, i], X[:, j])
+                X_j1 = np.dot(X[:, j], X[:, j])
+                proj += (X_ij/X_j1) * X[:, j]
+            perp = X[:, i] - proj
+            perp = (1 / np.linalg.norm(perp)) * perp 
+            X[:, i] = perp
+        return X
+
+
     def fit(self, X, y):
-        inv_AtA = np.linalg.inv(np.dot(X.T, X))
-        self.x_hat = np.dot(np.dot(inv_AtA, X.T), y)
+        # A = self.gram_schmidt(X)
+        A = np.copy(np.array(X))
+        # A = self.gram_schmidt(A)
+        inv_AtA = np.linalg.inv(np.dot(A.T, A))
+        self.x_hat = np.dot(np.dot(inv_AtA, A.T), y)
         return self.x_hat
     
     def predict(self, X):
