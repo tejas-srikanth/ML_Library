@@ -40,6 +40,7 @@ class Linear(Module):
         self.sgd_defined = True
     
     def forward(self, A): # A is (m x b)
+        print(f'FORWARD {self.m}, {self.n}: {self.W.shape}, {self.W0.shape}')
         self.A = A
         # (n x m) . (m x b) + (n x 1) = (n x b)
         return np.dot(self.W, self.A) + self.W0 # return value is (n x b)
